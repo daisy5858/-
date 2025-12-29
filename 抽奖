@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>公司年会抽奖系统</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: radial-gradient(circle at top, #1f2937, #020617);
+      color: #f9fafb;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 24px;
+      padding: 24px 28px 28px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7),
+        0 0 80px rgba(251, 191, 36, 0.25);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      backdrop-filter: blur(16px);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      gap: 16px;
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title-badge {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(252, 211, 77, 0.7);
+      color: #facc15;
+      background: rgba(0, 0, 0, 0.4);
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    .status-badge {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #4ade80;
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.8);
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: 2.2fr 1.1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stage {
+      background: radial-gradient(circle at top, #111827, #020617);
+      border-radius: 18px;
+      padding: 18px;
+      border: 1px solid rgba(55, 65, 81, 0.8);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stage::before,
+    .stage::after {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(250, 204, 21, 0.18), transparent);
+      filter: blur(4px);
+      z-index: 0;
+    }
+
+    .stage::before {
+      top: -70px;
+      left: -40px;
+    }
+
+    .stage::after {
+      bottom: -80px;
+      right: -40px;
+    }
+
+    .stage-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .stage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: #e5e7eb;
+    }
+
+    .current-prize {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .current-prize input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px dashed rgba(156, 163, 175, 0.7);
+      color: #fefce8;
+      font-size: 13px;
+      padding: 2px 4px;
+      outline: none;
+      min-width: 80px;
+    }
+
+    .current-prize input::placeholder {
+      color: rgba(156, 163, 175, 0.7);
+    }
+
+    .draw-info {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .display-area {
+      margin-top: 10px;
+      margin-bottom: 16px;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 16px;
+      padding: 22px 16px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.7);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .display-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(250, 204, 21, 0.09), transparent 65%);
+      pointer-events: none;
+    }
+
+    .name-roller {
+      position: relative;
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-align: center;
+      min-height: 1.2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-shadow: 0 0 18px rgba(0, 0, 0, 0.8),
+        0 0 25px rgba(251, 191, 36, 0.5);
+      color: #fefce8;
+    }
+
+    @media (max-width: 600px) {
+      .name-roller {
+        font-size: 30px;
+      }
+    }
+
+    .name-roller span {
+      display: inline-block;
+      transform-origin: center;
+    }
+
+    .rolling span {
+      animation: flicker 0.45s ease-in-out infinite alternate;
+    }
+
+    .winner-highlight span {
+      animation: winner-pop 0.6s ease-out forwards;
+    }
+
+    @keyframes flicker {
+      from {
+        opacity: 0.6;
+        transform: scale(0.97) translateY(1px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1.03) translateY(-1px);
+      }
+    }
+
+    @keyframes winner-pop {
+      0% {
+        transform: scale(1);
+        letter-spacing: 0.06em;
+      }
+      50% {
+        transform: scale(1.2);
+        letter-spacing: 0.16em;
+      }
+      100% {
+        transform: scale(1.05);
+        letter-spacing: 0.08em;
+      }
+    }
+
+    .spotlight {
+      position: absolute;
+      left: 50%;
+      top: -40px;
+      width: 360px;
+      height: 160px;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse at bottom, rgba(252, 211, 77, 0.4), transparent);
+      opacity: 0.8;
+      pointer-events: none;
+      filter: blur(2px);
+    }
+
+    .button-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .controls-left {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 9px 22px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.12s ease, box-shadow 0.12s ease,
+        background 0.12s ease, opacity 0.12s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #f59e0b, #facc15);
+      color: #111827;
+      box-shadow: 0 10px 25px rgba(252, 211, 77, 0.45);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 40px rgba(252, 211, 77, 0.6);
+    }
+
+    .btn-secondary {
+      background: rgba(15, 23, 42, 0.9);
+      color: #e5e7eb;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(31, 41, 55, 0.95);
+    }
+
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .settings {
+      font-size: 12px;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .settings label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .settings input[type="number"] {
+      width: 56px;
+      padding: 3px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      background: rgba(15, 23, 42, 0.7);
+      color: #e5e7eb;
+      outline: none;
+    }
+
+    .settings input[type="checkbox"] {
+      accent-color: #facc15;
+      width: 14px;
+      height: 14px;
+    }
+
+    .side-panel {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 18px;
+      padding: 14px 14px 16px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .side-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .count-pill {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(31, 41, 55, 0.95);
+      color: #9ca3af;
+      border: 1px solid rgba(55, 65, 81, 1);
+    }
+
+    .list-box {
+      background: rgba(15, 23, 42, 0.85);
+      border-radius: 12px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      padding: 8px;
+      max-height: 220px;
+      overflow: auto;
+      font-size: 12px;
+    }
+
+    .list-item {
+      padding: 5px 7px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #e5e7eb;
+    }
+
+    .list-item:nth-child(odd) {
+      background: rgba(17, 24, 39, 0.9);
+    }
+
+    .list-item:nth-child(even) {
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    .winner-item {
+      border-left: 2px solid rgba(250, 204, 21, 0.8);
+    }
+
+    .list-label {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .name-text {
+      font-weight: 500;
+    }
+
+    .small-hint {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: -4px;
+    }
+
+    .textarea-names {
+      width: 100%;
+      min-height: 80px;
+      max-height: 160px;
+      resize: vertical;
+      padding: 8px 9px;
+      border-radius: 10px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background: rgba(15, 23, 42, 0.85);
+      color: #e5e7eb;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .textarea-names::placeholder {
+      color: #6b7280;
+    }
+
+    .footer-hint {
+      margin-top: 12px;
+      font-size: 11px;
+      color: #6b7280;
+      text-align: right;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 1);
+      padding: 2px 8px;
+      color: #9ca3af;
+    }
+
+    .tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #facc15;
+      box-shadow: 0 0 12px rgba(250, 204, 21, 0.9);
+    }
+
+    .list-empty {
+      font-size: 11px;
+      color: #6b7280;
+      text-align: center;
+      padding: 12px 0;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="title-block">
+      <div class="title">
+        公司年会抽奖系统
+        <span class="title-badge">GitHub Pages · 内部使用</span>
+      </div>
+      <div class="subtitle">
+        不展示全部姓名，只在抽中时高亮显示，适合大屏播放。
+      </div>
+    </div>
+    <div class="status-badge">
+      <span class="status-dot"></span>
+      Ready for Draw · 在线版
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- 抽奖舞台 -->
+    <div class="stage">
+      <div class="stage-inner">
+        <div class="stage-header">
+          <div class="current-prize">
+            当前奖项：
+            <input id="prizeInput" type="text" placeholder="例如：三等奖 · 智能音箱" />
+          </div>
+          <div class="draw-info">
+            剩余待抽人数：<span id="remainingCount">0</span> 人
+          </div>
+        </div>
+
+        <div class="display-area">
+          <div class="spotlight"></div>
+          <div class="display-glow"></div>
+          <div id="nameDisplay" class="name-roller">
+            <span>请先在右侧导入名单</span>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <div class="controls-left">
+            <button id="startStopBtn" class="btn btn-primary" disabled>
+              ▶ 开始抽奖
+            </button>
+            <button id="resetBtn" class="btn btn-secondary">
+              重置所有
+            </button>
+          </div>
+          <div class="settings">
+            <label>
+              单次抽出
+              <input id="countPerDraw" type="number" min="1" value="1" />
+              人
+            </label>
+            <label>
+              <input id="allowRepeat" type="checkbox" />
+              允许重复中奖
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 侧边控制面板 -->
+    <div class="side-panel">
+      <div>
+        <div class="side-section-title">
+          抽奖名单设置
+          <span class="tag">
+            <span class="tag-dot"></span> 本地浏览器运行
+          </span>
+        </div>
+        <textarea
+          id="namesInput"
+          class="textarea-names"
+          placeholder="每行一个名称，可以使用姓名、工号或缩写，例如：&#10;E001 张三&#10;E002 李四&#10;E003 王五"
+        ></textarea>
+        <div class="small-hint">
+          修改名单后会自动更新，不会上传到服务器，适合内部使用。
+        </div>
+      </div>
+
+      <div>
+        <div class="side-section-title">
+          已导入名单
+          <span class="count-pill">共 <span id="totalCount">0</span> 人</span>
+        </div>
+        <div id="candidateList" class="list-box">
+          <div class="list-empty">尚未导入名单</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="side-section-title">
+          中奖记录
+          <span class="count-pill">累计 <span id="winnerCount">0</span> 人</span>
+        </div>
+        <div id="winnerList" class="list-box">
+          <div class="list-empty">还没有产生中奖者</div>
+        </div>
+      </div>
+
+      <div class="footer-hint">
+        提示：推荐使用大屏浏览器 F11 全屏展示，视觉效果更佳。
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ======= 核心数据状态 =======
+  let allCandidates = [];    // 所有导入的名字
+  let available = [];        // 仍然可以被抽中的名字
+  let winners = [];          // 已中奖记录
+  let rollingTimer = null;   // setInterval 句柄
+  let isRolling = false;     // 当前是否在“滚动抽奖”
+
+  const namesInput = document.getElementById("namesInput");
+  const candidateList = document.getElementById("candidateList");
+  const winnerList = document.getElementById("winnerList");
+  const nameDisplay = document.getElementById("nameDisplay");
+  const remainingCountEl = document.getElementById("remainingCount");
+  const totalCountEl = document.getElementById("totalCount");
+  const winnerCountEl = document.getElementById("winnerCount");
+  const startStopBtn = document.getElementById("startStopBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const countPerDrawInput = document.getElementById("countPerDraw");
+  const allowRepeatCheckbox = document.getElementById("allowRepeat");
+
+  // ======= 工具函数 =======
+  function parseNames(text) {
+    return text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+  }
+
+  function syncFromTextarea() {
+    allCandidates = parseNames(namesInput.value);
+    if (!allowRepeatCheckbox.checked) {
+      // 不允许重复中奖：available = 去掉已中奖的人
+      const winnerSet = new Set(winners.map((w) => w.name));
+      available = allCandidates.filter((n) => !winnerSet.has(n));
+    } else {
+      // 允许重复中奖：available = 全部
+      available = [...allCandidates];
+    }
+    updateUILists();
+    updateCounters();
+    updateStartButtonState();
+  }
+
+  function updateCounters() {
+    totalCountEl.textContent = allCandidates.length;
+    remainingCountEl.textContent = available.length;
+    winnerCountEl.textContent = winners.length;
+  }
+
+  function updateStartButtonState() {
+    startStopBtn.disabled = available.length === 0 || allCandidates.length === 0;
+  }
+
+  function updateCandidateListUI() {
+    candidateList.innerHTML = "";
+    if (allCandidates.length === 0) {
+      candidateList.innerHTML = '<div class="list-empty">尚未导入名单</div>';
+      return;
+    }
+    allCandidates.forEach((name, index) => {
+      const item = document.createElement("div");
+      item.className = "list-item";
+      item.innerHTML = `
+        <div>
+          <div class="name-text">${name}</div>
+          <div class="list-label">编号：${index + 1}</div>
+        </div>
+        <div class="list-label">${
+          available.includes(name) ? "待抽" : "已中奖 / 不可再抽"
+        }</div>
+      `;
+      candidateList.appendChild(item);
+    });
+  }
+
+  function updateWinnerListUI() {
+    winnerList.innerHTML = "";
+    if (winners.length === 0) {
+      winnerList.innerHTML = '<div class="list-empty">还没有产生中奖者</div>';
+      return;
+    }
+    winners.forEach((w, index) => {
+      const item = document.createElement("div");
+      item.className = "list-item winner-item";
+      item.innerHTML = `
+        <div>
+          <div class="name-text">${w.name}</div>
+          <div class="list-label">
+            批次：${w.batch} · 奖项：${w.prize || "未填写"} · 编号：${w.index + 1}
+          </div>
+        </div>
+      `;
+      winnerList.appendChild(item);
+    });
+  }
+
+  function updateUILists() {
+    updateCandidateListUI();
+    updateWinnerListUI();
+  }
+
+  function setDisplayName(text, asWinner = false) {
+    nameDisplay.classList.remove("rolling", "winner-highlight");
+    void nameDisplay.offsetWidth; // 强制重绘以重置动画
+    nameDisplay.textContent = "";
+    const span = document.createElement("span");
+    span.textContent = text || "";
+    nameDisplay.appendChild(span);
+    if (asWinner) {
+      nameDisplay.classList.add("winner-highlight");
+    }
+  }
+
+  // ======= 抽奖逻辑 =======
+  function pickRandomOne(list) {
+    if (list.length === 0) return null;
+    const idx = Math.floor(Math.random() * list.length);
+    return { name: list[idx], index: idx };
+  }
+
+  function startRolling() {
+    if (isRolling || available.length === 0) return;
+    isRolling = true;
+    startStopBtn.textContent = "■ 停止";
+    nameDisplay.classList.add("rolling");
+
+    rollingTimer = setInterval(() => {
+      const pick = pickRandomOne(available.length ? available : allCandidates);
+      if (!pick) return;
+      setDisplayName(pick.name, false);
+    }, 70); // 70ms 刷新一次，类似“高速滚动”
+  }
+
+  function stopRollingAndSelect() {
+    if (!isRolling) return;
+    isRolling = false;
+    startStopBtn.textContent = "▶ 再次抽奖";
+    nameDisplay.classList.remove("rolling");
+    clearInterval(rollingTimer);
+
+    // 模拟“减速”效果
+    const steps = 8;
+    let currentStep = 0;
+    let lastName = "";
+
+    const slowTimer = setInterval(() => {
+      const pick = pickRandomOne(available.length ? available : allCandidates);
+      if (!pick) {
+        clearInterval(slowTimer);
+        return;
+      }
+      lastName = pick.name;
+      setDisplayName(lastName, false);
+      currentStep++;
+
+      if (currentStep >= steps) {
+        clearInterval(slowTimer);
+        // 最终中奖
+        finalizeWinner(lastName);
+      }
+    }, 120);
+  }
+
+  function finalizeWinner(name) {
+    if (!name) return;
+    const prizeInput = document.getElementById("prizeInput");
+    const prize = prizeInput.value.trim();
+    const batchNumber = winners.length + 1;
+
+    setDisplayName(name, true);
+
+    // 记录中奖者
+    const originalIndex = allCandidates.indexOf(name);
+    winners.push({
+      name,
+      prize,
+      batch: batchNumber,
+      index: originalIndex !== -1 ? originalIndex : 0,
+    });
+
+    // 若不允许重复中奖，则从 available 中移除
+    if (!allowRepeatCheckbox.checked) {
+      available = available.filter((n) => n !== name);
+    }
+
+    updateUILists();
+    updateCounters();
+    updateStartButtonState();
+  }
+
+  // ======= 事件绑定 =======
+  namesInput.addEventListener("input", () => {
+    syncFromTextarea();
+  });
+
+  allowRepeatCheckbox.addEventListener("change", () => {
+    syncFromTextarea();
+  });
+
+  startStopBtn.addEventListener("click", () => {
+    if (!isRolling) {
+      startRolling();
+    } else {
+      stopRollingAndSelect();
+    }
+  });
+
+  resetBtn.addEventListener("click", () => {
+    if (!confirm("确定要重置所有数据吗？中奖记录也会被清空。")) return;
+    winners = [];
+    syncFromTextarea();
+    setDisplayName("抽奖已重置，请点击开始");
+  });
+
+  countPerDrawInput.addEventListener("change", () => {
+    let val = parseInt(countPerDrawInput.value, 10);
+    if (isNaN(val) || val < 1) val = 1;
+    countPerDrawInput.value = val;
+    // 当前版本展示的是一次抽一人，如需一次抽多人，可以扩展逻辑
+  });
+
+  // 初始化
+  setDisplayName("请先在右侧导入名单");
+  syncFromTextarea();
+</script>
+</body>
+</html>
