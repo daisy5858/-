@@ -1,0 +1,107 @@
+<div class="slot-wrapper">
+  <div class="slot-window">
+    <div class="slot-column" id="slot1"></div>
+    <div class="slot-column" id="slot2"></div>
+    <div class="slot-column" id="slot3"></div>
+  </div>
+</div>
+.slot-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.slot-window {
+  display: flex;
+  gap: 14px;
+  padding: 14px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(250,204,21,0.4);
+  background: rgba(0,0,0,0.35);
+}
+
+.slot-column {
+  width: 120px;
+  height: 120px;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid rgba(250,204,21,0.5);
+  background: linear-gradient(#111827, #020617);
+  color: #fefce8;
+  display: flex;
+  flex-direction: column;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.slot-item {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slot-column.animate {
+  animation: slot-scroll 0.15s linear infinite;
+}
+
+@keyframes slot-scroll {
+  from { transform: translateY(0); }
+  to { transform: translateY(-120px); }
+}
+
+.slot-win {
+  color: #facc15;
+  text-shadow: 0 0 12px rgba(250,204,21,0.8);
+  font-size: 32px;
+}
+const slot1 = document.getElementById("slot1");
+const slot2 = document.getElementById("slot2");
+const slot3 = document.getElementById("slot3");
+
+function fillSlot(col) {
+  col.innerHTML = "";
+  (available.length ? available : allCandidates).forEach(n => {
+    const d = document.createElement("div");
+    d.className = "slot-item";
+    d.textContent = n;
+    col.appendChild(d);
+  });
+}
+function startRolling() {
+  if (isRolling || available.length === 0) return;
+  isRolling = true;
+  startStopBtn.textContent = "■ 停止";
+
+  fillSlot(slot1);
+  fillSlot(slot2);
+  fillSlot(slot3);
+
+  slot1.classList.add("animate");
+  slot2.classList.add("animate");
+  slot3.classList.add("animate");
+}
+function stopRollingAndSelect() {
+  if (!isRolling) return;
+  isRolling = false;
+  startStopBtn.textContent = "▶ 再次抽奖";
+
+  slot1.classList.remove("animate");
+  setTimeout(() => slot2.classList.remove("animate"), 300);
+  setTimeout(() => slot3.classList.remove("animate"), 600);
+
+  // 最终确定中奖名字
+  setTimeout(() => {
+    const pick = pickRandomOne(available);
+    if (!pick) return;
+
+    [slot1, slot2, slot3].forEach(s=>{
+      s.innerHTML = `<div class="slot-item slot-win">${pick.name}</div>`;
+    });
+
+    finalizeWinner(pick.name);
+  }, 900);
+}
